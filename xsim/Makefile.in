@@ -1,0 +1,44 @@
+subdirs=etc plugins xsim
+
+all:
+	@for dir in ${subdirs}; do \
+	  (cd $$dir && $(MAKE) all) \
+	  || case "$(MFLAGS)" in *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+
+install:
+	@for dir in ${subdirs}; do \
+	  (cd $$dir && $(MAKE) install) \
+	  || case "$(MFLAGS)" in *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+	@echo "***************************************************"
+	@echo "*                                                 *"
+	@echo "* type \"make install-data\" to install data file   *"
+	@echo "*                                                 *"
+	@echo "***************************************************"
+
+	
+clean:
+	/bin/rm -f *~
+	@for dir in ${subdirs}; do \
+	  (cd $$dir && $(MAKE) clean) \
+	  || case "$(MFLAGS)" in *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+
+distclean: clean
+	/bin/rm -f Makefile config.h config.status config.cache config.log core tags *~ *.bak
+	@for dir in ${subdirs}; do \
+	  (cd $$dir && $(MAKE) distclean) \
+	  || case "$(MFLAGS)" in *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+
+install-data:
+	cd plugins/IMs;make install-data
+
+uninstall:
+	@for dir in ${subdirs}; do \
+	  (cd $$dir && $(MAKE) uninstall) \
+	  || case "$(MFLAGS)" in *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+
+

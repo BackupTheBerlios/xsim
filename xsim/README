@@ -1,0 +1,35 @@
+this is an Input Method for X
+
+you need db4 with cxx enabled installed
+you can download it at http://www.sleepycat.com/
+
+INSTALL DB4-CXX
+
+	%cd db-dir/build_unix
+	%../dist/configure --enable-cxx --prefix=/usr/local
+	%make
+	%make install		#maybe need be root
+
+INSTALL XSIM
+
+	%cd xsim-dir
+if u using GBK, 
+	%./configure
+if u using GB2312
+        %./configure --with-cn-locale=GB2312
+	%make
+	%make install		#maybe need be root
+
+
+
+USE XISM
+	%export XMODIFIERS=@im=XSIM
+	%xsim
+
+usage:
+	ctrl-space	swap to chinese input mode
+	shift-space	swap to input method 
+
+	u can put a copy of xsimrc to ~/.xsim/xsimrc, then even u reinstall xsim, no setting will lost
+	and u can put db file at .xsim, and change the xsimrc by set DICT_LOCAL pointer there, 
+		so your db will keep when u reinstall xsim

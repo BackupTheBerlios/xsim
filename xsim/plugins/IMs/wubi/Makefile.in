@@ -1,0 +1,51 @@
+CXX             = @CXX@
+CFLAGS          = @CFLAGS@
+CPPFLAGS        = @CPPFLAGS@
+CXXFLAGS	= @CXXFLAGS@
+DEFS            = @DEFS@
+LIBS            = @LIBS@ @dblib@
+LDFLAGS         = @LDFLAGS@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+LD_SHAREEXE     = @LD@
+
+prefix          = @prefix@
+topdir		= @topdir@
+gcclib		= `$(CXX) -print-libgcc-file-name`
+
+xsim_libp       = $(prefix)/xsim/plugins
+include_path	= $(topdir)/xsim/
+
+OBJS=wubiim.o wubiimc.o
+TARGET=wubi.so
+
+all:$(TARGET)
+
+$(TARGET):$(OBJS)
+	$(LD_SHAREEXE) -shared -o $(TARGET) $(OBJS) $(LDFLAGS) $(LIBS) $(gcclib)
+
+wubiim.o:wubiim.cpp wubiim.h wubiimc.h b2q.h $(include_path)imc.h $(include_path)wstring.h $(include_path)im.h $(include_path)ic.h
+	$(CXX) -c wubiim.cpp -I$(include_path) -I$(include_path)/IMdkit $(CXXFLAGS)
+
+wubiimc.o:wubiimc.h wubiimc.cpp $(include_path)wstring.h $(include_path)imc.h
+	$(CXX) -c wubiimc.cpp -I$(include_path) -I$(include_path)/IMdkit $(CXXFLAGS)
+
+clean:
+	rm -f *.o $(TARGET) core *~ *.bak
+	cd dict; make clean
+
+distclean:clean
+	rm -rf Makefile
+	cd dict; make distclean
+
+install:all
+	$(topdir)/mkinstalldirs $(xsim_libp)
+	cp -f $(TARGET) $(xsim_libp)
+
+install-data:
+	cd dict;make install-data
+
+uninstall:
+	cd $(xsim_libp); rm -f $(TARGET)
+	cd dict; make uninstall

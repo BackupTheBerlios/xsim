@@ -1,0 +1,43 @@
+CXX             = @CXX@
+CFLAGS          = @CFLAGS@
+CPPFLAGS        = @CPPFLAGS@
+CXXFLAGS	= @CXXFLAGS@
+DEFS            = @DEFS@
+LIBS            = @LIBS@
+LDFLAGS         = @LDFLAGS@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+LD_SHAREEXE     = @LD@
+
+prefix          = @prefix@
+topdir		= @topdir@
+gcclib		= `$(CXX) -print-libgcc-file-name`
+
+xsim_libp       = $(prefix)/xsim/plugins
+include_path	= $(topdir)/xsim/
+
+OBJS=statuspanel_std.o
+TARGET=statuspanel_std.so
+
+all:$(TARGET)
+
+statuspanel_std.so:$(OBJS)
+	$(LD_SHAREEXE) -shared -o $(TARGET) $(OBJS) $(LDFLAGS) $(LIBS) $(gcclib)
+
+statuspanel_std.o:statuspanel_std.h statuspanel_std.cpp $(include_path)/statuspanel.h $(include_path)/wstring.h $(include_path)/conf.h  $(include_path)/win.h
+	$(CXX) -c statuspanel_std.cpp -I$(include_path) -I$(include_path)/IMdkit $(CXXFLAGS)
+
+clean:
+	rm -f *.o $(TARGET) core *~ *.bak
+
+distclean:clean
+	rm -rf Makefile
+
+install:all
+	$(topdir)/mkinstalldirs $(xsim_libp)
+	cp -f $(TARGET) $(xsim_libp)
+
+uninstall:
+	cd $(xsim_libp); rm -f $(TARGET)
+

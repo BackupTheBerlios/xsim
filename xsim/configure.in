@@ -1,0 +1,392 @@
+# Process this file with autoconf to produce a configure script.
+AC_INIT(xsim, 0.3.8.6)
+AC_CONFIG_SRCDIR([xsim/main.cpp])
+AC_CONFIG_HEADER([config.h])
+
+AC_ARG_WITH(bdb4-cxx, [  --with-bdb4-cxx         Berkeley DB install place], bdb4_prefix="$withval", bdb4_prefix="NONE")
+AC_ARG_WITH(bdb3-cxx, [  --with-bdb3-cxx         Berkeley DB install place], bdb3_prefix="$withval", bdb3_prefix="NONE")
+AC_ARG_WITH(cn-locale, [  --with-cn-locale        Default chinese locale [GBK]], chn_locale="$withval", chn_locale="GBK")
+AC_ARG_WITH(qt3,    [  --with-qt3              QT v3 or higher location. ], qt3dir="$withval", qt3dir="NONE")
+AC_ARG_WITH(qt3-includes,    [  --with-qt3-includes     QT v3 headers location. ], qt3inc="$withval", qt3inc="NONE")
+AC_ARG_WITH(qt3-libraries,    [  --with-qt3-libraries    QT v3 libraries location. ], qt3lib="$withval", qt3lib="NONE")
+AC_ARG_WITH(kde3,   [  --with-kde3             KDE3 location. ], kde3dir="$withval", kde3dir="NONE")
+AC_ARG_WITH(kde3-includes,   [  --with-kde3-includes    KDE3 headers location. ], kde3inc="$withval", kde3inc="NONE")
+AC_ARG_WITH(kde3-libraries,   [  --with-kde3-libraries   KDE3 libraries location. ], kde3lib="$withval", kde3lib="NONE")
+
+AC_ARG_ENABLE(debug, [  --enable-debug          Enable debug], enable_debug=1, enable_debug=0)
+AC_ARG_ENABLE(mdk-patch, [  --enable-mdk-patch      Enable MDK dist patch], enable_mdk_patch=1, enable_mdk_patch=0)
+AC_ARG_ENABLE(status-all, [  --enable-status-all     Enable all status panel plugin], enable_statusall=1, enable_statusall=0)
+AC_ARG_ENABLE(status-kde3, [  --enable-status-kde3    Enable KDE3 status panel plugin], enable_statuskde3=1, enable_statuskde3=0)
+#AC_ARG_ENABLE(status-gnome2, [  --enable-status-gnome2  Enable Gnome2 status panel plugin], enable_statusgnome2=1, enable_statusgnome2=0)
+
+# Check for OS
+# it's too hard to detect kde and qt automatic, so hard code here, maybe change later
+case "X`uname -s`" in
+  XLinux)
+    os_type="LINUX"
+    dllib="-ldl"
+    pthreadlib="-lpthread"
+    ;;
+  XFreeBSD)   MAKE=make
+    os_type="FREEBSD"
+    dllib="-lc"
+    pthreadlib="-lc_r"
+    ;;
+  *)
+    AC_MSG_ERROR([Your system is not supported yet, If u hope, drop me a message.])
+    ;;
+esac
+
+# Checks for programs.
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_RANLIB
+AC_CHECK_TOOL(LD, ld)
+
+# Checks for header files.
+AC_PATH_XTRA
+
+if test x"$no_x" != x; then
+  AC_MSG_ERROR([X Window System not found])
+fi
+
+AC_HEADER_STDC
+AC_CHECK_HEADERS([locale.h malloc.h stdlib.h string.h sys/param.h unistd.h wchar.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+# Checks for library functions.
+AC_FUNC_MALLOC
+AC_TYPE_SIGNAL
+AC_FUNC_STAT
+AC_CHECK_FUNCS([memmove memset setlocale strchr strstr])
+
+if test "x$enable_debug" = "x1" ; then
+  CFLAGS="-g -Wall -O2 -DDEBUG -I$x_includes"
+  CXXFLAGS=$CFLAGS
+  LDFLAGS="-g -L$x_libraries"
+else
+  CFLAGS="-Wall -O2 -I$x_includes"
+  CXXFLAGS=$CFLAGS
+  LDFLAGS="-L$x_libraries"
+fi
+
+if test "x$enable_mdk_patch" = "x1" ; then
+  CFLAGS="$CFLAGS -DMDK_PATCH"
+fi
+
+AC_MSG_CHECKING([for Berkerly DB header])
+
+#if user define the db location
+bdbinc_found="n"
+if test "$bdb4_prefix" != "NONE"; then
+  if test -f "$bdb4_prefix/include/db_cxx.h"; then
+    CXXFLAGS="-I$bdb4_prefix/include $CFLAGS";
+    LDFLAGS="-L$bdb4_prefix/lib $LDFLAGS";
+    bdbinc_found="y"
+  else
+    AC_MSG_ERROR(No BDB CXX header found by user defined)
+  fi
+else
+  if test "$bdb3_prefix" != "NONE"; then
+    if test -f "$bdb3_prefix/include/db_cxx.h"; then
+      CXXFLAGS="-I$bdb3_prefix/include $CFLAGS";
+      LDFLAGS="-L$bdb3_prefix/lib $LDFLAGS";
+      bdbinc_found="y"
+    else
+      AC_MSG_ERROR(No BDB CXX header found by user defined)
+    fi
+  fi
+fi
+
+#try to detect db header automatic
+if test "$bdbinc_found" = "n"; then
+  if test -f "/usr/include/db4/db_cxx.h"; then
+    CXXFLAGS="-I/usr/include/db4 $CFLAGS";
+    LDFLAGS="-L/usr/lib $LDFLAGS";
+    bdbinc_found="y"
+  fi
+fi
+
+if test "$bdbinc_found" = "n"; then
+  if test -f "/usr/include/db3/db_cxx.h"; then
+    CXXFLAGS="-I/usr/include/db3 $CFLAGS";
+    LDFLAGS="-L/usr/lib $LDFLAGS";
+    bdbinc_found="y"
+  fi
+fi
+
+if test "$bdbinc_found" = "n"; then
+  if test -f "/usr/include/db_cxx.h"; then
+    #not sure lib is 3 or 4, need check lib to determin
+    CXXFLAGS="-I/usr/include $CFLAGS";
+    LDFLAGS="-L/usr/lib $LDFLAGS";
+    bdbinc_found="y"
+  fi
+  if test "$bdbinc_found" = "n"; then
+    if test -f "/usr/local/include/db_cxx.h"; then
+      #not sure lib is 3 or 4, need check lib to determin
+      CXXFLAGS="-I/usr/local/include $CFLAGS";
+      LDFLAGS="-L/usr/local/lib $LDFLAGS";
+      bdbinc_found="y"
+    fi
+  fi
+fi
+
+#for FreeBSD
+if test "$bdbinc_found" = "n"; then
+  if test -f "/usr/local/include/db4/db_cxx.h"; then
+    CXXFLAGS="-I/usr/local/include/db4 $CFLAGS";
+    LDFLAGS="-L/usr/local/lib $LDFLAGS";
+    bdbinc_found="y"
+  fi
+  if test "$bdbinc_found" = "n"; then
+    if test -f "/usr/local/include/db3/db_cxx.h"; then
+      CXXFLAGS="-I/usr/local/include/db3/ $CFLAGS";
+      LDFLAGS="-L/usr/local/lib $LDFLAGS";
+      bdbinc_found="y"
+    fi
+  fi
+fi
+
+#we need to know which DB version using, so check it
+if test "$bdbinc_found" = "y"; then
+  AC_LANG_CPLUSPLUS
+  AC_TRY_COMPILE(#include <db_cxx.h>
+  ,int cf(DB *, const DBT *, const DBT *); Db db(NULL, 0); db.set_dup_compare(cf);,
+            [ bdb_version=">=3.2"],
+            [ bdb_version="3"]
+            )
+fi
+
+if test "$bdbinc_found" = "n"; then
+  AC_MSG_ERROR(No Berkeley DB4 or DB3 CXX header found)
+fi
+
+echo "Berkerly DB $bdb_version CXX header found"
+
+#check db cxx lib
+AC_MSG_CHECKING([for Berkerly DB library])
+OLIBS="$LIBS"
+
+LIBS="-ldb_cxx"
+dblib="$LIBS"
+AC_LANG_CPLUSPLUS
+AC_TRY_LINK(#include <db_cxx.h>
+,Dbt dbt; dbt.get_size();,
+            [ bdblib_found="y"],
+            [ bdblib_found="n"]
+            )
+
+#for FreeBSD and maybe needed by Debian
+if test "$bdblib_found" = "n"; then
+  LIBS="-ldb4_cxx"
+  dblib="$LIBS"
+  AC_LANG_CPLUSPLUS
+  AC_TRY_LINK(#include <db_cxx.h>
+  ,Dbt dbt; dbt.get_size();,
+            [ bdblib_found="y"],
+            [ bdblib_found="n"]
+            )
+
+  if test "$bdblib_found" = "n"; then
+    LIBS="-ldb3_cxx"
+    dblib="$LIBS"
+    AC_LANG_CPLUSPLUS
+    AC_TRY_LINK(#include <db_cxx.h>
+    ,Dbt dbt; dbt.get_size();,
+            [ bdblib_found="y"],
+            [ echo "no"; bdblib_found="n"]
+            )
+  fi
+fi
+
+if test "$bdblib_found" = "n"; then
+  AC_MSG_ERROR(Failed to check DB $bdb_version CXX library);
+fi
+
+echo "Berkerly DB $bdb_version CXX library found"
+
+LIBS="$OLIBS"
+
+if test "$prefix" = NONE; then
+  prefix=/usr/local
+fi
+
+if test "$chn_locale" = "GBK"; then
+  chn_fontlist="gbk"
+  dbfile_suffix="GBK"
+else
+  chn_fontlist="gb2312.1980"
+  dbfile_suffix="GB2312"
+fi
+
+if test "$bdb_version" = ">=3.2" ; then
+  CXXFLAGS="$CXXFLAGS -DBDB_VERSION4 -DOS_$os_type"
+else
+  CXXFLAGS="$CXXFLAGS -DBDB_VERSION3 -DOS_$os_type"
+fi
+
+topdir="`pwd`"
+
+status_subdirs="std"
+status_default="std"
+if test "$enable_statusall" = "1"; then
+  enable_statuskde3=1
+#  enable_statusgnome2=1
+fi
+
+#we check kde3 and qt3
+if test "$enable_statuskde3" == "1"; then
+  status_subdirs="$status_subdirs kde3"
+
+  AC_MSG_CHECKING([for QT 3.0.x])
+  if test "$qt3inc" = "NONE"; then
+    qt_include_dirs="\
+      /usr/lib/qt3/include \
+      /usr/lib/qt/include \
+      /usr/include/qt \
+      /usr/local/qt/include \
+      /usr/local/include/qt \
+      /usr/X11/include/qt \
+      /usr/X11/include/X11/qt \
+      /usr/X11R6/include \
+      /usr/X11R6/include/qt \
+      /usr/X11R6/include/X11/qt \
+      /usr/X11/lib/qt/include"
+
+    if test "$qt3dir" != "NONE"; then
+      qt_include_dirs="$qt3dir/include $qt_include_dirs"
+    fi
+
+    for qt_dir in $qt_include_dirs; do
+      if test -r "$qt_dir/qbig5codec.h"; then
+        qt3inc=$qt_dir
+        break
+      fi
+    done
+  fi
+
+  if test "$qt3inc" = "NONE"; then
+    AC_MSG_ERROR(No QT 3.0.x headers found)
+  fi
+
+  if test "$qt3lib" = "NONE"; then
+    qt_library_dirs="\
+      /usr/lib/qt3/lib \
+      /usr/lib \
+      /usr/local/lib \
+      /usr/lib/qt \
+      /usr/lib/qt/lib \
+      /usr/local/lib/qt \
+      /usr/local/qt/lib \
+      /usr/X11/lib \
+      /usr/X11/lib/qt \
+      /usr/X11R6/lib \
+      /usr/X11R6/lib/qt"
+
+    if test "$qt3dir" != "NONE"; then
+      qt_library_dirs="$qt3dir/lib $qt_library_dirs"
+    fi
+
+    for qt_dir in $qt_library_dirs; do
+      if test -r $qt_dir/libqt-mt.so.3; then
+        qt3lib=$qt_dir
+        break
+      fi
+    done
+  fi
+
+  if test "$qt3lib" = "NONE"; then
+    AC_MSG_ERROR(No QT 3.0.x libraries found)
+  fi
+
+  AC_MSG_RESULT([yes, libraries: $qt3lib, headers: $qt3inc])
+
+  # now check kde3 ##########################
+  AC_MSG_CHECKING([for KDE3])
+
+  if test "$kde3inc" = "NONE"; then
+    kde_incdirs="/opt/kde3/include /opt/kde/include /usr/lib/kde/include /usr/local/kde/include /usr/local/include /usr/kde/include /usr/include/kde /usr/include $x_includes $qt3inc"
+    if test "$kde3dir" != "NONE"; then
+      kde_incdirs="$kde3dir/include $kde_incdirs"
+    fi
+
+    for kde_dir in $kde_incdirs; do
+      if test -r $kde_dir/ksystemtray.h; then
+        kde3inc=$kde_dir
+        break
+      fi
+    done
+  fi
+
+  if test "$kde3inc" = "NONE"; then
+    AC_MSG_ERROR(No KDE3 includes found)
+  fi
+
+  if test "$kde3lib" = "NONE"; then
+    kde_libdirs="/opt/kde3/lib /opt/kde/lib /usr/lib/kde/lib /usr/local/kde/lib /usr/local/lib /usr/kde/lib /usr/lib/kde /usr/lib /usr/X11R6/lib /usr/X11R6/kde/lib /usr/lib/kde3"
+    if test "$kde3dir" != "NONE"; then
+      kde_libdirs="$kde3dir/lib $kde_libdirs"
+    fi
+
+    for kde_dir in $kde_libdirs; do
+      if test -r $kde_dir/libkdeui.so; then
+        kde3lib=$kde_dir
+        break
+      fi
+    done
+  fi
+
+  if test "$kde3lib" = "NONE"; then
+    AC_MSG_ERROR(No KDE3 libraries found)
+  fi
+
+  AC_MSG_RESULT([yes, libraries: $kde3lib, headers: $kde3inc])
+  status_default="kde3"
+fi
+
+#if test "$enable_statusgnome2" == "1"; then
+#  status_subdirs="$status_subdirs gnome2"
+#fi
+
+# which plugin u need??
+if test "$enable_statusall" = "1"; then
+  status_default="std"
+fi
+
+AC_SUBST(chn_locale)
+AC_SUBST(chn_fontlist)
+AC_SUBST(dbfile_suffix)
+AC_SUBST(dblib)
+AC_SUBST(topdir)
+AC_SUBST(dllib)
+AC_SUBST(pthreadlib)
+
+AC_SUBST(status_subdirs)
+AC_SUBST(status_default)
+AC_SUBST(kde3inc)
+AC_SUBST(kde3lib)
+AC_SUBST(qt3inc)
+AC_SUBST(qt3lib)
+
+AC_OUTPUT(	Makefile				\
+		xsim/Makefile				\
+		xsim/IMdkit/Makefile			\
+		plugins/Makefile			\
+		plugins/IMs/Makefile			\
+		plugins/IMs/jianpin/Makefile		\
+		plugins/IMs/jianpin/dict/Makefile	\
+		plugins/IMs/wubi/Makefile		\
+		plugins/IMs/wubi/dict/Makefile		\
+		plugins/Panels/Makefile			\
+		plugins/Panels/std/Makefile		\
+		plugins/StatusPanels/Makefile		\
+		plugins/StatusPanels/std/Makefile	\
+		plugins/StatusPanels/kde3/Makefile	\
+		etc/Makefile				\
+		etc/xsimrc				\
+		)

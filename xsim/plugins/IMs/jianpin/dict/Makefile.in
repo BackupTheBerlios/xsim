@@ -1,0 +1,76 @@
+CXX             = @CXX@
+CFLAGS          = @CFLAGS@
+CPPFLAGS        = @CPPFLAGS@
+CXXFLAGS	= @CXXFLAGS@
+DEFS            = @DEFS@
+LDFLAGS         = @LDFLAGS@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+LIBS            = @LIBS@ @dblib@
+ld_shareexe     = @ld_shareexe@
+
+prefix          = @prefix@
+topdir		= @topdir@
+
+xsim_datp       = $(prefix)/xsim/dat
+dict_char_file	= char.@dbfile_suffix@
+dict_word_file  = word
+dict_locale	= zh_CN.@chn_locale@
+
+all:
+
+data:chardb worddb
+
+chardb:char2db $(dict_char_file) charfreq
+	rm -f chardb
+	./char2db $(dict_char_file) chardb $(dict_locale) charfreq
+
+worddb:word2db $(dict_word_file)
+	rm -f worddb
+	./word2db $(dict_word_file) worddb $(dict_locale)
+
+char2db:char2db.cpp ../simpleimc.h
+	$(CXX) char2db.cpp -o char2db $(CXXFLAGS) $(LDFLAGS) $(LIBS) -I$(topdir)/xsim
+
+word2db:word2db.cpp ../simpleimc.h
+	$(CXX) word2db.cpp -o word2db $(CXXFLAGS) $(LDFLAGS) $(LIBS) -I$(topdir)/xsim
+
+chtest:chtest.cpp ../simpleimc.h
+	$(CXX) chtest.cpp -o chtest $(CXXFLAGS) $(LDFLAGS) $(LIBS) -I$(topdir)/xsim
+
+wdtest:wdtest.cpp ../simpleimc.h
+	$(CXX) wdtest.cpp -o wdtest $(CXXFLAGS) $(LDFLAGS) $(LIBS) -I$(topdir)/xsim
+
+install:
+	@echo "***************************************************"
+	@echo "*                                                 *"
+	@echo "* type \"make install-data\" to install data file   *"
+	@echo "*                                                 *"
+	@echo "***************************************************"
+
+install-data:data
+	$(topdir)/mkinstalldirs $(xsim_datp)
+	cp -f chardb $(xsim_datp)/chardb
+	cp -f worddb $(xsim_datp)/worddb
+
+uninstall:
+	cd $(xsim_datp);rm -f chardb worddb
+
+charfreq: freq/sort.char.count
+	ln -s $< $@
+
+char.GB2312: gb2312/PY.cin
+	ln -s $< $@
+
+char.GBK: gbk/gbkpy.freepy30
+	ln -s $< $@
+
+word: words/sysphrase.txt
+	ln -s $< $@
+
+clean:
+	rm -f chardb worddb char2db word2db chtest wdtest core *~ *.bak
+
+distclean:clean
+	rm -rf Makefile xsimrc tags

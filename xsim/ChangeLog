@@ -1,0 +1,40 @@
+0.3.8.6-pre
+bug fixed : crash when compiled with gcc3.1 and using mozilla
+0.3.8.5
+bug fixed : crash when input  \'
+0.3.8.4
+can input more symbles
+input editable
+user can delete words in db by press ctrl-1~9,hot keys can defined by user
+replaced gbkpy.mb with gbkpy.freepy
+0.3.8.3
+bug fix release:try to fix flush bug still :P
+bug fixed : auto detect kde3 and qt path
+bug fixed : correct update status with mozilla
+0.3.8.2
+bug fixed : kde3 desktop crashed when using status kde3 plugin
+0.3.8.1
+bug fix release:try to fix the bug cause input status flush (hope the fix work)
+can compiled under DEBIAN(hope work)
+0.3.8
+lot change...
+add kde3 plugin for status panel
+add wubi input method
+input methods, status panels, input panels are plugin now
+(no 0.3.5-0.3.7)
+0.3.4
+will work under FreeBSD
+bug fixed : when switch windows, the status display not switch
+0.3.3.1 (never release to public)
+can compiled with gcc3.1, but failed build data file.So dont use gcc3.1 to compile now.
+always display status panel, even screen saver actived :P(i've no way to know whether the screen saver is active or not)
+0.3.3
+bug fixed : in 0.3.2.0 ,when disable status panel in configure file, xsim will crash
+0.3.2.9
+add class TWinMan to make the code clean.
+split class TPanel to TPanel and TStatusPanel, so make code clean.
+bug fixed : when an IM client close,then killall XSIM cause X foult.
+bug fixed : when screen saver actived, XSIM not hide.
+bug fixed : some time the input panel hide for no reason.
+some minor fixes.
+

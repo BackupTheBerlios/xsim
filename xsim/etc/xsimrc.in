@@ -1,0 +1,63 @@
+# xsim config file
+XIM_NAME	"XSIM"
+XIM_LOCALE	"zh_CN.@chn_locale@"
+
+ON_SPOT_ENABLED	Yes
+DICT_LOCAL	@prefix@/xsim/dat
+PLUGIN_LOCAL	@prefix@/xsim/plugins
+
+TRIGGER_KEY	"ctrl space"
+SWITCH_KEY	"ctrl Shift_L"
+
+SHOW_STATUS_PANEL Yes
+
+# Refer to /usr/lib/X11/rgb.txt for details of colors
+INPUT_PANEL		"std"
+	FG_COLOR	"black"
+	BG_COLOR	"gray92"
+	SUFFIX_COLOR	"blue"
+	CARET_COLOR	"blue"
+	FONT_NAME	"-sony-*-*-*-*-*-16-*-*-*-*-*-iso8859-1,-*-*-*-*-*-*-16-*-*-*-*-*-@chn_fontlist@-0"
+
+// avliable status_panel "std" "kde3"
+STATUS_PANEL		@status_default@
+	FG_COLOR	"black"
+	BG_COLOR	"gray92"
+	STATUS_COLOR	"green"
+	FONT_NAME	"-sony-*-*-*-*-*-20-*-*-*-*-*-iso8859-1,-*-*-*-*-*-*-16-*-*-*-*-*-@chn_fontlist@-0"
+
+# input mothed should define at last
+# can define up to 10
+# by now, we got two :)
+
+INPUT_METHOD		"jianpin"
+	IM_DESC			ºÚ∆¥
+	CARE_H			No
+	CARE_NG			Yes
+	CHARDB			chardb
+	WORDDB			worddb
+	
+	#maybe u need these key
+	#PREV_KEY		"Page_Up"
+	#NEXT_KEY		"Page_Down"
+
+	PREV_KEY		"comma"
+	NEXT_KEY		"period"
+	B2Q_KEY			"shift space"
+	#<N> will be replaced by 1-9
+	WORDDELETE_KEY		"ctrl N"
+
+INPUT_METHOD		"wubi"
+	IM_DESC			ŒÂ± 
+	WORDDB			worddb.wubi
+	
+	#maybe u need these key
+	#PREV_KEY		"Page_Up"
+	#NEXT_KEY		"Page_Down"
+
+	PREV_KEY		"comma"
+	NEXT_KEY		"period"
+	B2Q_KEY			"shift space"
+	NEW_WORD_KEY		"ctrl Insert"
+	#<N> will be replaced by 1-9
+	WORDDELETE_KEY		"ctrl N"

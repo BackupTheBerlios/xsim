@@ -1,0 +1,19 @@
+prefix          = @prefix@
+topdir		= @topdir@
+
+xsim_etcp       = $(prefix)/xsim/etc
+
+all:
+	
+install:
+	$(topdir)/mkinstalldirs $(xsim_etcp)
+	cp -f xsimrc $(xsim_etcp)
+	
+clean:
+	/bin/rm -f *~
+
+distclean: clean
+	rm -f xsimrc Makefile
+
+uninstall:
+	cd $(xsim_etcp); rm -f xsimrc

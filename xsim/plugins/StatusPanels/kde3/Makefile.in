@@ -1,0 +1,50 @@
+CXX             = @CXX@
+CFLAGS          = @CFLAGS@
+CPPFLAGS        = @CPPFLAGS@
+CXXFLAGS	= @CXXFLAGS@
+DEFS            = @DEFS@
+LIBS            = @LIBS@
+LDFLAGS         = @LDFLAGS@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+LD_SHAREEXE     = @LD@
+MOC		= @MOC@
+
+prefix          = @prefix@
+topdir		= @topdir@
+pthreadlib	= @pthreadlib@
+gcclib		= `$(CXX) -print-libgcc-file-name`
+
+xsim_libp       = $(prefix)/xsim/plugins
+include_path	= $(topdir)/xsim/
+kdeinc_path	= @kde3inc@
+qtinc_path	= @qt3inc@
+kdelib_path	= @kde3lib@
+qtlib_path	= @qt3lib@
+gcc_lib		= $(shell $(CXX) -print-libgcc-file-name)
+
+OBJS=statuspanel_kde3.o
+TARGET=statuspanel_kde3.so
+
+all:$(TARGET)
+
+statuspanel_kde3.so:$(OBJS)
+	$(LD_SHAREEXE) -shared -o $(TARGET) $(OBJS) $(LDFLAGS) $(LIBS) $(gcclib) -L$(kdelib_path) -L$(qtlib_path) -lqt-mt -lkdeui $(pthreadlib)
+
+statuspanel_kde3.o:statuspanel_kde3.h statuspanel_kde3.cpp $(include_path)/statuspanel.h $(include_path)/wstring.h $(include_path)/conf.h  $(include_path)/win.h
+	$(CXX) -c statuspanel_kde3.cpp -I$(kdeinc_path) -I$(qtinc_path) -I$(include_path) -I$(include_path)/IMdkit $(CXXFLAGS)
+
+clean:
+	rm -f *.o $(TARGET) core *~ *.bak *.moc
+
+distclean:clean
+	rm -rf Makefile
+
+install:all
+	$(topdir)/mkinstalldirs $(xsim_libp)
+	cp -f $(TARGET) $(xsim_libp)
+
+uninstall:
+	cd $(xsim_libp); rm -f $(TARGET)
+

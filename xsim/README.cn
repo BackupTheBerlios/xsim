@@ -1,0 +1,182 @@
+X Simple Input Method
+
+下载
+	你可以在以下地址得到最新版本的XSIM。
+		http://developer.berlios.de/project/filelist.php?group_id=486
+	你也可以在以下镜像地址下载
+		ftp://ftp.gnuchina.org/pub/linux/chinese/inputmethod/xwindow/xsim
+
+	如果你需要老的版本
+		http://sourceforge.net/project/showfiles.php?group_id=54261
+
+安装
+	安装XSIM需要Berkerly DB 3或4，同时在安装DB的时候需要C＋＋支持
+	如果你有rpm的话则需要安装DB-CXX和DB-DEVE包
+	如果从源代码安装，方法如下
+
+        %cd db-dir/build_unix
+        %../dist/configure --enable-cxx --prefix=/usr/local
+        %make
+        %make install           #maybe need be root
+
+	安装XSIM
+
+        %cd xsim-dir
+
+        %./configure
+        因为locale缺省是GBK，如果你的locale是GB2312，可以用如下命令，也可以在编译以后改xsimrc来设定
+        %./configure --with-cn-locale=GB2312
+	如果你使用FreeBSD,并且使用EUC的locale
+	%./configure --with-cn-locale=EUC
+        %make
+        %make install           #maybe need be root
+
+	如果你以前没有安装过XSIM-0.3.2.4以后的版本，你必须用以下命令建立数据库，并安装。
+	%make install-data
+	×如果同时你指定--with-cn-locale=GB2312或者EUC,那么在安装过程中会产生很多报警，不过没有关系，可以使用。
+
+	如果作configure的时候找不到BDB则需要手动设定BDB的目录
+	 --with-bdb3-cxx=<DB 3 path>		当你用的是DB3
+	 --with-bdb4-cxx=<DB 4 path>		当你用的是DB4
+
+	如果你的系统是MDK，需要下面的选项
+	--enable-mdk-patch
+	
+	如果你的系统安装了KDE3，并且希望将状态窗口放在KDE3的任务条上，需要下面的选项
+	--enable-status-kde3
+	如果你希望在kde3启动以后自动运行xsim，可以在~/.kde/Autostart目录下面作一个xsim的链接，这样每次kde3启动以后将自动运行xism。
+运行
+        %xsim
+
+注意
+	你必须在 xinitrc 或 xsession 或 profile 中执行下面的命令才能使XSIM对 X 下任意程序起作用
+        %export XMODIFIERS=@im=XSIM
+
+	如果你不愿意在启动 X 时设定这一变量那么需要以下步骤才能让XSIM起效
+	在X下打开一个console执行
+        %export XMODIFIERS=@im=XSIM
+	%<your application>
+	以上的命令必须在同一个console里执行
+
+	RH7.3的用户，由于RH7.3的DB3的RPM少了2个文件，如果你执行configure是提示无法找到LIB，那么你必须到
+
+	https://sourceforge.net/project/showfiles.php?group_id=54261
+
+	下载rh7.3-db3.3-patch.tar.gz，解开以后执行db3-patch
+	然后继续安装
+
+配置文件
+	配置文件在/usr/local/xsim/etc/xsimrc
+	你可以在自己的home目录下面建一个目录，以便使用自己的配置，这样当以后xsim重装，就无须在改动xsimrc
+
+	%cd ~
+	%mkdir .xsim
+	%cp /usr/local/xsim/etc/xsimrc .xsim/xsimrc
+
+	也可以在运行的时候指定配置文件
+	%xsim -c config-file
+
+配置文件的设定
+	前景色		FG_COLOR
+	背景色		BG_COLOR
+	显示后缀色	SUFFIX_COLOR
+	编辑光标色	CARET_COLOR
+		可选的颜色有
+		aquamarine
+		black
+		blue
+		blue violet
+		brown
+		cadet blue
+		coral
+		cornflower blue
+		cyan
+		light gray
+		light grey
+		light steel blue
+		lime green
+		magenta
+		maroon
+		medium aquamarine
+		...
+		具体请参照 /usr/lib/X11/rgb.txt
+		
+	显示状态面板 SHOW_STATUS_PANEL
+	面板状态的颜色 STATUS_COLOR
+
+	字体名字 FONT_NAME
+	
+	输入法的名字 XIM_NAME
+		这是输入法启动以后的名字，在使用的时候先
+		export XMODIFIERS=@im=<XIM_NAME>
+		这样启动的程序才能调用XSIM
+		
+	输入法的地区 XIM_LOCALE  (GB2312, GBK, EUC, GB18030 ...)
+		只有当应用程序的 XIM_NAME 和 XIM_LOCALE 都于设定相同，输入法才能起作用
+
+		注意：
+		有时候用GB2312, FreeBSD的EUC的用户可能按CTRL－SPACE无法激活XSIM，
+		这时候将XIM_LOCALE改成zh_CN，可能解决问题。
+
+	ON_SPOT_ENABLED 现在还不支持 :P
+
+	字词文件的目录 DICT_LOCAL
+		字词文件对用户必须可读写才行，所以建议大家在HOME的目录下面建 ".xsim"目录
+		并把xsimrc和字词文件复制到目录下面
+		然后改变字词文件的目录为 "/home/your_user_id/.xsim"
+		这样就不会有问题了，并且以后重新安装，所有的配置以及字词的使用频率都能保留在你的目录下面。
+
+	启动关闭输入法热键 TRIGGER_KEY
+		可以是 "[ctrl] [alt] [shift] <KeyName>"
+		Keyname 可以按照 /usr/include/X11/keysymdef.h 中XK_XXXXXX命名，
+
+	输入法切换 SWITCH_KEY
+		用来切换输入法
+
+	以下是输入法的设定，输入法的设定必须在最后
+	第一个输入法就是系统的缺省输入法，你可以调整输入法之间的位置，以确定缺省
+	============================================================================
+
+	输入法的标识 INPUT_MOTHED
+		不要改 ^o^
+		
+	输入法描述 IM_DESC
+		想显示在输入条上的描述
+		
+	翘舌音必须相符 CARE_H 	（简拼）
+		如果是 "Yes" ,则输入s,c,z时sh,ch,zh打头的字词将不显示
+		如果是 "No"  ,则输入s,c,z时将同时显示 sh, ch, zh 打头的字词
+		建议是 "Yes"
+		
+	后鼻音相符 CARE_NG	 （简拼）
+		如果是 "Yes" ，则输入 en，on，an等非后鼻音时将不显示后鼻音的字词
+		如果是 "No"  ，则输入 en，on，an等非后鼻音时将同时显示后鼻音的字词
+		建议用 "No"
+		
+	字库的文件名 CHARDB
+	词库的文件名 WORDDB
+
+	向前翻页键 PREV_KEY		参照TRIGGER_KEY的设定
+	向后翻页键 NEXT_KEY		参照TRIGGER_KEY的设定
+	加入新的词组 NEW_WORD_KEY（五笔）参照TRIGGER_KEY的设定
+
+	切换半角，全角键 B2Q_KEY		参照TRIGGER_KEY的设定
+
+	词组删除键 WORDDELETE_KEY	格式是"[ctrl] [alt] [shift] N" 当运行时将会用1-9来替代字符N，
+		
+使用
+	五笔输入时候加入新的词组
+	  缺省热键是ctrl－insert，你可以自己修改
+	  当按下热键时输入面板将显示，你可以想一般输入一样输入，
+	  但是输入的字词并不反馈给客户程序，
+	  当你的词已经完整输入，按回车，XSIM将把新的词组入库，并反馈给客户程序
+	删除词组
+	  按词组删除键，将直接删除词组。
+
+感谢
+	XCIN 的 team， XSIM内XIM的主体是参照XCIN进行编码。
+	同时感谢 xiaohuo，linuxrat，yuking以及别的朋友的帮助，也感谢 UNICON 的开发人员，使我有可能进一步的完善XSIM。
+	
+问题
+	如果你有什么问题或建议可以来信
+		xsim@myrealbox.com	

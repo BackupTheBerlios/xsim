@@ -1,0 +1,79 @@
+CXX             = @CXX@
+CFLAGS          = @CFLAGS@
+CPPFLAGS        = @CPPFLAGS@
+CXXFLAGS	= @CXXFLAGS@
+DEFS            = @DEFS@
+LIBS            = @LIBS@
+LDFLAGS         = @LDFLAGS@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+ld_shareexe     = @ld_shareexe@
+
+prefix          = @prefix@
+topdir		= @topdir@
+dllib		= @dllib@
+
+xsim_lnkp	= $(prefix)/bin
+xsim_binp       = $(prefix)/xsim/bin
+xsim_etcp       = $(prefix)/xsim/etc
+
+OBJS=main.o conf.o panel.o statuspanel.o win.o xim.o ic.o icman.o im.o wstring.o
+
+all:xsim
+
+xsim:$(OBJS) IMdkit/libXimd.a
+	$(CXX) -o xsim $(LDFLAGS) $(OBJS) $(LIBS) -L./IMdkit -lXimd -rdynamic $(dllib) -lX11
+
+main.o:main.cpp xim.h conf.h
+	$(CXX) -c main.cpp $(CXXFLAGS) -I./IMdkit
+
+win.o:win.cpp win.h wstring.h
+	$(CXX) -c win.cpp $(CXXFLAGS) -I./IMdkit
+
+panel.o:panel.cpp panel.h ic.h imc.h wstring.h conf.h
+	$(CXX) -c panel.cpp $(CXXFLAGS)  -I./IMdkit
+
+statuspanel.o:statuspanel.h statuspanel.cpp wstring.h ic.h imc.h conf.h
+	$(CXX) -c statuspanel.cpp $(CXXFLAGS) -I./IMdkit
+
+conf.o:conf.cpp conf.h wstring.h
+	$(CXX) -c conf.cpp $(CXXFLAGS) -I./IMdkit -DDEFAULT_CONFIG=\"$(xsim_etcp)/xsimrc\"
+
+xim.o:xim.cpp xim.h icman.h im.h panel.h conf.h wstring.h statuspanel.h win.h ic.h
+	$(CXX) -c xim.cpp $(CXXFLAGS) -I./IMdkit
+
+icman.o:icman.cpp icman.h ic.h wstring.h
+	$(CXX) -c icman.cpp $(CXXFLAGS) -I./IMdkit
+
+ic.o:ic.cpp ic.h wstring.h
+	$(CXX) -c ic.cpp $(CXXFLAGS) -I./IMdkit
+
+im.o:im.cpp im.h wstring.h
+	$(CXX) -c im.cpp $(CXXFLAGS) -I./IMdkit
+
+wstring.o:wstring.h wstring.cpp
+	$(CXX) -c wstring.cpp $(CXXFLAGS) -I./IMdkit
+
+IMdkit/libXimd.a:
+	cd IMdkit;make
+
+clean:
+	rm -f *.o xsim core *~ *.bak
+	cd IMdkit; make clean
+
+distclean:clean
+	rm -rf Makefile tags
+	cd IMdkit; make distclean
+
+install:all
+	$(topdir)/mkinstalldirs $(xsim_binp)
+	cp -f xsim $(xsim_binp)
+	$(topdir)/mkinstalldirs $(xsim_lnkp)
+	cd $(xsim_lnkp); rm -f xsim
+	ln -s $(xsim_binp)/xsim $(xsim_lnkp)/xsim
+
+uninstall:
+	cd $(xsim_lnkp); rm -f xsim
+	cd $(xsim_binp); rm -f xsim
+

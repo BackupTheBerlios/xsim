@@ -1,0 +1,5 @@
+1 xsim sometime crash in mozilla when compiled with gcc3.1,
+2 deadlock the X,when killed by xconsole
+3 reported crash under kde3.02 when using kde3 status plugin
+4 std status panel keep shown even when screensaver actived
+5 reported with some GTK program when inactived for some time, xsim will unactivable, GTK's problem???

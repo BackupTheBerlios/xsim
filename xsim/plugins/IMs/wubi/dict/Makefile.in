@@ -1,0 +1,51 @@
+CXX             = @CXX@
+CFLAGS          = @CFLAGS@
+CPPFLAGS        = @CPPFLAGS@
+CXXFLAGS	= @CXXFLAGS@
+DEFS            = @DEFS@
+LDFLAGS         = @LDFLAGS@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+LIBS            = @LIBS@ @dblib@
+ld_shareexe     = @ld_shareexe@
+
+prefix          = @prefix@
+topdir		= @topdir@
+
+xsim_datp       = $(prefix)/xsim/dat
+dict_word_file  = word
+dict_locale	= zh_CN.@chn_locale@
+
+TARGET		= worddb.wubi
+all:
+
+data:$(TARGET)
+
+$(TARGET):word2db $(dict_word_file)
+	rm -f $(TARGET)
+	./word2db $(dict_word_file) $(TARGET) $(dict_locale)
+
+word2db:word2db.cpp ../wubiimc.h
+	$(CXX) word2db.cpp -o word2db $(CXXFLAGS) $(LDFLAGS) $(LIBS) -I$(topdir)/xsim
+
+wdtest:wdtest.cpp ../wubiimc.h
+	$(CXX) wdtest.cpp -o wdtest $(CXXFLAGS) $(LDFLAGS) $(LIBS) -I$(topdir)/xsim
+
+install:
+
+install-data:data
+	$(topdir)/mkinstalldirs $(xsim_datp)
+	cp -f $(TARGET) $(xsim_datp)/$(TARGET)
+
+uninstall:
+	cd $(xsim_datp);rm -f $(TARGET)
+
+word:words/cjkvinput-wubi-table.txt
+	ln -s $< $@
+
+clean:
+	rm -f $(TARGET) word2db wdtest core *~ *.bak
+
+distclean:clean
+	rm -rf Makefile tags
