@@ -1,0 +1,53 @@
+CXX             = @CXX@
+CFLAGS          = @CFLAGS@
+CPPFLAGS        = @CPPFLAGS@
+CXXFLAGS	= @CXXFLAGS@
+DEFS            = @DEFS@
+LIBS            = @LIBS@ @dblib@
+LDFLAGS         = @LDFLAGS@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+LD_SHAREEXE     = @LD@
+
+prefix          = @prefix@
+topdir		= @topdir@
+gcclib		= `$(CXX) -print-libgcc-file-name`
+
+xsim_libp       = $(prefix)/xsim/plugins
+include_path	= $(topdir)/xsim/
+
+OBJS=tableim.o tableimc.o
+TARGET=table.so
+
+all:$(TARGET)
+	cd dict; make
+
+$(TARGET):$(OBJS)
+	$(LD_SHAREEXE) -shared -o $(TARGET) $(OBJS) $(LDFLAGS) $(LIBS) $(gcclib)
+
+tableim.o:tableim.cpp tableim.h tableimc.h $(include_path)imc.h $(include_path)wstring.h $(include_path)im.h $(include_path)ic.h
+	$(CXX) -c tableim.cpp -I$(include_path) -I$(include_path)/IMdkit $(CXXFLAGS)
+
+tableimc.o:tableimc.h tableimc.cpp $(include_path)wstring.h $(include_path)imc.h
+	$(CXX) -c tableimc.cpp -I$(include_path) -I$(include_path)/IMdkit $(CXXFLAGS)
+
+clean:
+	rm -f *.o $(TARGET) core *~ *.bak
+	cd dict; make clean
+
+distclean:clean
+	rm -rf Makefile
+	cd dict; make distclean
+
+install:all
+	$(topdir)/mkinstalldirs $(xsim_libp)
+	cp -f $(TARGET) $(xsim_libp)
+	cd dict; make install
+
+install-data:
+	cd dict;make install-data
+
+uninstall:
+	cd $(xsim_libp); rm -f $(TARGET)
+	cd dict; make uninstall

@@ -1,0 +1,54 @@
+CXX             = @CXX@
+CFLAGS          = @CFLAGS@
+CPPFLAGS        = @CPPFLAGS@
+CXXFLAGS	= @CXXFLAGS@
+DEFS            = @DEFS@
+LDFLAGS         = @LDFLAGS@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+LIBS            = @LIBS@ @dblib@
+ld_shareexe     = @ld_shareexe@
+
+prefix          = @prefix@
+topdir		= @topdir@
+
+xsim_datp       = $(prefix)/xsim/dat
+xsim_binp	= $(prefix)/xsim/bin
+
+TARGET		= worddb.cj
+
+all:word2db
+
+data:$(TARGET)
+
+worddb.cj:word2db word.cj
+	rm -f $@
+	./word2db  word.cj $@ @tw_locale@
+
+word2db:word2db.cpp ../tableimc.h
+	$(CXX) word2db.cpp -o word2db $(CXXFLAGS) $(LDFLAGS) $(LIBS) -I$(topdir)/xsim
+
+wdtest:wdtest.cpp ../tableimc.h
+	$(CXX) wdtest.cpp -o wdtest $(CXXFLAGS) $(LDFLAGS) $(LIBS) -I$(topdir)/xsim
+
+install:all
+	$(topdir)/mkinstalldirs $(xsim_datp)
+	cp -f word2db $(xsim_binp)/word2db.table
+
+install-data:data
+	$(topdir)/mkinstalldirs $(xsim_datp)
+	cp -f worddb.cj $(xsim_datp)/worddb.cj
+
+uninstall:
+	cd $(xsim_datp);rm -f $(TARGET)
+	cd $(xsim_binp);rm -f worddb.table
+
+word.cj:cj/cj.cin
+	ln -s $< $@
+
+clean:
+	rm -f $(TARGET) word2db wdtest core *~ *.bak
+
+distclean:clean
+	rm -rf Makefile tags
